@@ -1,0 +1,60 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Auto Scaling Group
+
+Parameters:
+  PrivateSubnetA:
+    Description: List of private subnets 
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnetB:
+    Description: List of private subnets 
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  ASG:
+    Description: Used to launch instances
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties: 
+      AutoScalingGroupName: ModuleASG
+      # AvailabilityZone:
+      #   - Fn::Select:
+      #     - 0
+      #     - !GetAZs
+      #       Ref: AWS::Region
+        # - Fn::Select:
+        #   - 1
+        #   - !GetAZs
+        #     Ref: AWS::Region
+      Cooldown: 300
+      DesiredCapacity: 1
+      HealthCheckGracePeriod: 30
+      HealthCheckType: ELB
+      #InstanceId: String
+      LaunchConfigurationName: !ImportValue LaunchConfiguration
+      # LaunchTemplate: 
+      #   LaunchTemplateSpecification
+      # LifecycleHookSpecificationList: 
+      #   - LifecycleHookSpecification
+      LoadBalancerNames: 
+        - !ImportValue ModuleClassicLB
+      MaxSize: 1
+      # MetricsCollection: 
+      #   - MetricsCollection
+      MinSize: 1
+      # MixedInstancesPolicy: 
+      #   MixedInstancesPolicy
+      # NotificationConfigurations: 
+      #   - NotificationConfiguration
+      # PlacementGroup: String
+      # ServiceLinkedRoleARN: String
+      # Tags: 
+      #   - TagProperty
+      # TargetGroupARNs: 
+      #   - String
+      # TerminationPolicies: 
+      #   - String
+      VPCZoneIdentifier: 
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB

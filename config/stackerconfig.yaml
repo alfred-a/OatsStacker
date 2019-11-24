@@ -1,0 +1,24 @@
+---
+namespace: ${namespace}
+stacker_bucket: ${stacker_bucket_name}
+sys_path: ./
+#service_role: ARN of service that stacker should use when executing CF changes. Optional
+#package_sources: used to define remote sources for blueprints,local source can also be specified
+
+stacks:
+ - name: VPC
+    template_path: cf_templates/CF-VPC.yml
+    description: Main VPC
+    variables:
+      VPCCIDR: 10.0.0.0/20
+    #locked: boolean, Optional, if set to true, the stack is locked and will not be updated unless the stack is passed to stacker via the –force flag
+    #enabled: boolean, Optional, if set to false, the stack is disabled and will not be built or updated
+    #protected: boolean, Optional, if set to true stacker will switch to interactive mode to allow or skip change
+    #requires: list of other stacks this stack requires
+    #required_by: list of other stacks that require this stack
+    #tags: a dictionary of tags to apply to stack
+    stack_name: Module1-4VPC
+    region: us-east-2 #optional, if provided, specifies the name of region CF stack should reside in
+    #profile: optional, if provided specifies the name of a AWS profile to use whem performing aws api calls
+    #stack_policy_path: if provided, specifies the path to a JSON stack policy
+    #in_progress_behavior: Optional, if provided specifies behavior for when stack is in CREAT/UPDATE_IN_PROGRESS

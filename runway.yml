@@ -1,0 +1,8 @@
+---
+
+deployments:
+  - modules:
+      - modules:
+          - cf_templates
+  regions:
+    - us-east-1

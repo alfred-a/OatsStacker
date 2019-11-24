@@ -1,0 +1,49 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Lauch EC2 instance to test 
+
+Parameters:
+  SSHKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: SSH Key for EC2
+    ConstraintDescription: Must be and existing EC2 KeyPair
+  
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t1.micro
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+  VPC:
+    Description: Select VPC
+    Type: AWS::EC2::VPC::Id
+
+  Subnet:
+    Description: Select a Private Subnet
+    Type: AWS::EC2::Subnet::Id
+ 
+  InstanceSG:
+    Description: Select The ASSG Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-00bf61217e296b409
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref InstanceSG
+      KeyName: !Ref SSHKeyName
+      SubnetId: !Ref Subnet
+      IamInstanceProfile:
+        Fn::ImportValue: OATS-CF-EC2-IAM-ROLE-EC2Profile
+      Tags:
+        - Key: Name
+          Value: CF TestInstance

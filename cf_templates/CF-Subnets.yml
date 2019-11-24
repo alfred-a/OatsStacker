@@ -1,0 +1,101 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Create 2 private and 2 public Subnets
+
+Parameters:
+  PrivateSubnetA:
+    Description: 'Set Private Subnet A IP'
+    Type: String
+  PrivateSubnetB:
+    Description: 'Set Private Subnet B IP'
+    Type: String
+  PublicSubnetA:
+    Description: 'Set Public Subnet A IP'
+    Type: String
+  PublicSubnetB:
+    Description: 'Set Public Subnet B IP'
+    Type: String
+  VPC:
+    Description: 'Set Network IP'
+    Type: AWS::EC2::VPC::Id
+
+
+Resources:
+  SubnetPrivateA:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetA
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-PrivateSubnetA'
+  
+  SubnetPrivateB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnetB
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs
+          Ref: AWS::Region
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-PrivateSubnetB'
+
+  SubnetPublicA:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetA
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-PublicSubnetA'
+
+  SubnetPublicB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetB
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs
+          Ref: AWS::Region
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-PublicSubnetB'
+
+Outputs:
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join [ ",", [ !Ref SubnetPublicA, !Ref SubnetPublicB ]]
+
+  PrivateSubnets:
+    Description: A list of the private subnets
+    Value: !Join [ ",", [ !Ref SubnetPrivateA, !Ref SubnetPrivateB ]]
+  
+  PrivateSubnetA:
+    Description: Private Subnet A
+    Value: !Ref SubnetPrivateA
+  
+  PrivateSubnetB:
+    Description: Private Subnet B
+    Value: !Ref SubnetPrivateB
+ 
+  PublicSubnetA:
+    Description: Public Subnet A
+    Value: !Ref SubnetPublicA
+
+  PublicSubnetB:
+    Description: Public Subnet B
+    Value: !Ref SubnetPublicB

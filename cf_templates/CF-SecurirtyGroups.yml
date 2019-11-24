@@ -1,0 +1,204 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: |
+  ASG SG - Allow 22 tcp from ELB SG 
+  ELB SG - Allow 22 tcp from Bastion/VPN Security groups 
+  EFS SG - Allow 2049 tcp from ASG SG 
+
+Parameters:
+  SSHKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: SSH Key for OpenVPN
+    ConstraintDescription: Must be and existing EC2 KeyPair
+
+  VPC:
+    Description: Select VPC for Tables
+    Type: AWS::EC2::VPC::Id   
+
+  ClientCidr:
+    Description: Ip of Client
+    Type: String
+    Default: 76.97.181.32/32 
+
+Resources:
+  ASGSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupDescription: Allow 22 tcp from ELB SG
+        VpcId: !Ref VPC
+        # SecurityGroupIngress:
+        # - IpProtocol: tcp
+        #   FromPort: 80
+        #   ToPort: 80
+        #   CidrIp: 0.0.0.0/0
+        # SecurityGroupEgress:
+        # - IpProtocol: tcp
+        #   FromPort: 80
+        #   ToPort: 80
+        #   CidrIp: 0.0.0.0/0
+  InboundRuleASGSG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ASGSG
+      IpProtocol: -1
+      # FromPort: 943
+      # ToPort: 943
+      # IpProtocol: tcp
+      # FromPort: 443
+      # ToPort: 443
+      # IpProtocol: udp
+      # FromPort: 1194
+      # ToPort: 1194
+      SourceSecurityGroupId: !Ref ELBSG
+
+  ELBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow 22 tcp from Bastion and VPN SG
+      VpcId: !Ref VPC
+      Tags: 
+        - Key: Name
+          Value: ELBG
+    
+  InboundRuleELBSG1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ELBSG
+      IpProtocol: -1
+      # FromPort: 943
+      # ToPort: 943
+      # IpProtocol: tcp
+      # FromPort: 443
+      # ToPort: 443
+      # IpProtocol: udp
+      # FromPort: 1194
+      # ToPort: 1194
+      SourceSecurityGroupId: !Ref BastionSG
+          
+  InboundRuleELBSG2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ELBSG
+      IpProtocol: -1
+    # FromPort: 943
+    # ToPort: 943
+    # IpProtocol: tcp
+    # FromPort: 443
+    # ToPort: 443
+    # IpProtocol: udp
+    # FromPort: 1194
+    # ToPort: 1194
+      SourceSecurityGroupId: !Ref OpenVPNSG
+
+  InboundRuleELBSG3:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ELBSG
+      IpProtocol: -1
+    # FromPort: 943
+    # ToPort: 943
+    # IpProtocol: tcp
+    # FromPort: 443
+    # ToPort: 443
+    # IpProtocol: udp
+    # FromPort: 1194
+    # ToPort: 1194
+      SourceSecurityGroupId: !Ref ASGSG
+
+  EFSSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow 2049 tcp from ASG SG
+      VpcId: !Ref VPC
+      Tags: 
+          - Key: Name
+            Value: EFSSG
+
+  InboundRuleBastionG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref EFSSG
+      IpProtocol: -1
+      # FromPort: 943
+      # ToPort: 943
+      # IpProtocol: tcp
+      # FromPort: 443
+      # ToPort: 443
+      # IpProtocol: udp
+      # FromPort: 1194
+      # ToPort: 1194
+      SourceSecurityGroupId: !Ref ASGSG
+
+  BastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH from Home and work
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref ClientCidr
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref ClientCidr
+      Tags: 
+        - Key: Name
+          Value: BastionSG
+
+  OpenVPNSG:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Allow UDP 1194, TCP 943, TCP 443 from Home and Work
+        VpcId: !Ref VPC
+        SecurityGroupIngress:
+        - IpProtocol: udp
+          FromPort: 1194
+          ToPort: 1194
+          CidrIp: !Ref ClientCidr
+        - IpProtocol: tcp
+          FromPort: 943
+          ToPort: 943
+          CidrIp: !Ref ClientCidr
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref ClientCidr
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref ClientCidr
+        Tags: 
+        - Key: Name
+          Value: OpenVPNSG
+
+Outputs:
+  ASGSG:
+    Description: Reference to autoscaling SG
+    Value: !Ref ASGSG
+
+  ELBSG:
+    Description: Reference to elasticloadbalancer SG
+    Value: !Ref ELBSG
+
+  EFSSG:
+    Description: Reference to efs-filesystem SG
+    Value: !Ref EFSSG
+
+  BastionSG:
+    Description:  Reference to bastion SG
+    Value: !Ref BastionSG
+
+  OpenVPNSG:
+    Description:  Reference to vpn SG
+    Value: !Ref OpenVPNSG
+
+  VPC:
+    Description: Reference to created VPC
+    Value: !Ref VPC
+
+  

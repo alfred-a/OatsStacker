@@ -1,0 +1,81 @@
+---
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Loadbalancer with health check tcp 22 and endpoint tcp 22 
+  
+Parameters:
+  ELBSG:
+    Description: Select The ELBSG Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  
+  PublicSubnetA:
+    Description: Select public subnet in AZ1
+    Type: AWS::EC2::Subnet::Id
+
+  PublicSubnetB:
+    Description: Select public subnet in AZ2
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties: 
+      # AccessLoggingPolicy: 
+      #   AccessLoggingPolicy
+      # AppCookieStickinessPolicy: 
+      #   - AppCookieStickinessPolicy
+      # AvailabilityZones: 
+      #   - String
+      # ConnectionDrainingPolicy: 
+      #   ConnectionDrainingPolicy
+      # ConnectionSettings: 
+      #   ConnectionSettings
+      CrossZone: true
+      # HealthCheck: 
+      #   HealthCheck
+      # Instances: 
+      #   - String
+      # LBCookieStickinessPolicy: 
+      #   - LBCookieStickinessPolicy
+      Listeners: 
+        - InstancePort: 6379
+          InstanceProtocol: TCP
+          LoadBalancerPort: 6379
+          Protocol: TCP
+      LoadBalancerName: ModuleELB
+      # Policies: 
+      #   - Policies
+      Scheme: internal
+      SecurityGroups: 
+        - !Ref ELBSG
+      Subnets: 
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      # Tags: 
+      #   - Tag
+      # ELB:
+      #   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      #   Properties: 
+      #     IpAddressType: ipv4
+      #     # LoadBalancerAttributes: 
+      #     #   - LoadBalancerAttribute
+      #     Name: ModuleELB
+      #     Scheme: internal
+      #     SecurityGroups: 
+      #       - !Ref ELBSG
+      #     # SubnetMappings: 
+      #     #   - SubnetMapping
+      #     Subnets: 
+      #       - !Ref PublicSubnetA
+      #       - !Ref PublicSubnetB
+      #     # Tags: 
+      #     #   - Tag
+      #     # Type: String
+  
+Outputs:
+  LoadBalancer:
+    Description: Reference to ModuleELB
+    Value: !Ref ELB
+    Export:
+      Name: ModuleClassicLB

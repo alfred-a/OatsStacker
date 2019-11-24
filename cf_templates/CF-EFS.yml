@@ -1,0 +1,51 @@
+---
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  EFS FileSystem and MountTarget 
+  
+Parameters:
+  VPC:
+    Description: Select VPC to place Subnets
+    Type: AWS::EC2::VPC::Id
+  
+  PublicSubnet:
+    Description: Select private subnet
+    Type: AWS::EC2::Subnet::Id
+
+  FilesystemSG:
+    Description: Select The EFSSG Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+  
+  
+  
+Resources:
+  Filesystem:
+    Type: AWS::EFS::FileSystem
+    # Properties: 
+      # Encrypted: Boolean
+      # FileSystemTags: 
+      # - ModuleEFS
+      # KmsKeyId: String
+      # LifecyclePolicies: 
+      #   - LifecyclePolicy
+      # PerformanceMode: String
+      # ProvisionedThroughputInMibps: Double
+      # ThroughputMode: String
+  
+  MountTarget: 
+    Type: AWS::EFS::MountTarget
+    Properties: 
+      FileSystemId: !Ref Filesystem
+      SubnetId: !Ref PublicSubnet
+      SecurityGroups:
+        - !Ref FilesystemSG
+
+Outputs:
+  Filesystem:
+    Description: Reference to created EFS
+    Value: !Ref Filesystem
+
+  MountTarget:
+    Description: Reference to mount Mount target
+    Value: !Ref MountTarget

@@ -1,0 +1,89 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: |
+  create a Launch Configuration for the Autoscaling Group 
+  Ensure that there is userdata which creates a directory 
+  and mounts the created EFS mount point to the instance at
+  boot time. 
+
+Parameters:
+  SSHKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: SSH Key for Instance
+    ConstraintDescription: Must be and existing EC2 KeyPair
+
+  InstanceSG:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Select SG for instance
+
+  LCSG:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Select ASGSG for launch configuration
+
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t1.micro
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+
+  ImageId:
+    Description: Enter image id to launch
+    Type: String
+    Default: ami-00bf61217e296b409
+
+Resources:
+  ASG:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties: 
+      AssociatePublicIpAddress: false
+      #BlockDeviceMappings: 
+        #- BlockDeviceMapping
+      #ClassicLinkVPCId: String
+      #ClassicLinkVPCSecurityGroups: 
+        #- String
+      #EbsOptimized: Boolean
+      IamInstanceProfile: !ImportValue EC2Profile
+      ImageId: !Ref ImageId
+      #InstanceId: String
+      #InstanceMonitoring: Boolean
+      InstanceType: !Ref InstanceType
+      #KernelId: String
+      KeyName: !Ref SSHKeyName
+      #LaunchConfigurationName: String
+      #PlacementTenancy: String
+      #RamDiskId: String
+      SecurityGroups: 
+        - !Ref LCSG
+      #SpotPrice: String
+      # UserData:
+      #   Fn::Base64:
+      #     !Sub |
+      #   #!/bin/bash
+      #   sudo yum install -y amazon-efs-utils
+      #   sudo yum install -y gcc openssl-devel tcp_wrappers-devel
+      #   sudo curl -o stunnel-5.55.tar.gz https://www.stunnel.org/downloads.html/stunnel-5.55.tar.gz
+      #   sudo tar xvfz stunnel-5.55.tar.gz
+      #   cd stunnel-5.55
+      #   sudo ./configure
+      #   sudo make
+      #   sudo rm /bin/stunnel
+      #   sudo make install
+      #   if [[ -f /bin/stunnel ]]; then
+
+      #   sudo ln -s /usr/local/bin/stunnel /bin/stunnel
+      #   sudo mkdir /efs 
+      #   sudo mount -t efs ${Fn::!ImportValue Filesystem}:/ /efs
+
+Outputs:
+  LaunchConfiguration:
+    Description: Reference to launch configuration
+    Value: !Ref ASG
+    Export:
+      Name: LaunchConfiguration
